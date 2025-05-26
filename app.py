@@ -460,14 +460,14 @@ def train_model():
         # 3. Model Architecture
         def create_cnn(input_shape=(128, 128, 3), num_classes=3):
             model = models.Sequential()
-            model.add(layers.Conv2D(32, (3, 3), activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001), input_shape=input_shape))# Detects basic visual features like edges and corners (e.g., jawline, mask edges)
+            model.add(layers.Conv2D(32, (3, 3), activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001), input_shape=input_shape))# Detects features basic features (edges)
             model.add(layers.MaxPooling2D((2, 2)))
-            model.add(layers.Conv2D(64, (3, 3), activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001)))#Learns more meaningful patterns by combining edges into shapes (e.g., eyes, mouth regions)
+            model.add(layers.Conv2D(64, (3, 3), activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001)))# mid-level patterns (shapes, curves)
             model.add(layers.MaxPooling2D((2, 2)))
-            model.add(layers.Conv2D(128, (3, 3), activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001)))# Detects high-level structures like face components and mask position
+            model.add(layers.Conv2D(128, (3, 3), activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001)))# Detects face components and mask position, Complex objects (e.g., eyes, masks, faces)
             model.add(layers.MaxPooling2D((2, 2))) #MaxPooling: reduces spatial(spatial refers to the width and height dimensions) size and keeps the most important features.
             model.add(layers.Flatten()) # for dense use because dense cant use height and weight separately
-            model.add(layers.Dense(128, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001))) # Learns full-face relationships (nose, mouth, mask) for classification
+            model.add(layers.Dense(128, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001))) #  deep pattern recognition (makes a first guess)
             model.add(layers.Dropout(0.6)) #Dropout “reminds” the network to not depend too much on any neuron, making the learned features more robust and generalizable.
             #The dropped neurons only skip this one training step. In the next training step (next batch), dropout will randomly choose a (different) set of neurons to drop.
             model.add(layers.Dense(128, activation='relu'))      # Refines decision-making from the learned robust features after dropout
@@ -475,8 +475,8 @@ def train_model():
             model.add(layers.Dense(num_classes, activation='softmax')) # softmax is for multitasks and it comes at last output layer ,# Final classification layer: outputs probability of each mask class
             return model
              #kernel_regularizer. This is a parameter used in certain Keras layers
-        #.Regularization helps prevent overfitting by adding a penalty(cost).
-        #l2(0.001) adds a small penalty on large weights, which helps the model avoid overfitting and generalize better.
+        #.Regularization helps prevent overfitting by adding a penalty(cost). 	kernel_regularizer= kernel refers to weights and regulazier is for smootthing (only for understanding)
+        #l2(0.001) adds a small penalty on large weights, which helps update the weights in a way that discourages large values and avoid overfitting and generalize better.
         cnn = create_cnn()
         cnn.compile(  #A function from the Keras Model class that prepares the model
             optimizer=tf.keras.optimizers.Adam(learning_rate=0.0005),  #Optimizer = the algorithm that adjusts model weights during training based on the error (loss). lr according to per batch
@@ -491,9 +491,9 @@ def train_model():
             validation_data=val_generator #It helps the function understand what that argument is for
         )
 
-        # 5. Save model (overwrite old model)
+        # 5. Save model
         cnn.save('facemask_model.h5')
-        print("✅ Model training completed and saved (overwritten) as facemask_model.h5")
+        print("✅ Model training completed and saved as facemask_model.h5")
 
         # ✅ Response to client
         return jsonify({'message': '✅ Retraining completed!'})
