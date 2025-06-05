@@ -106,7 +106,7 @@ from datetime import datetime
 # === Ensure log.csv exists ===
 def ensure_log_file_integrity():
     if not os.path.exists(LOG_FILE):
-        with open(LOG_FILE, mode='w', newline='') as file: #newline prevents extra line spaces row wise
+        with open(LOG_FILE, mode='w', newline="") as file :#newline prevents extra line spaces row wise
             writer = csv.writer(file)
             writer.writerow(['Timestamp', 'Filename', 'Prediction', 'Actual_Label']) #Writes a single row into the CSV file.
 
